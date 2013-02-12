@@ -12,7 +12,7 @@ use Proclet;
 use JSON ();
 use Log::Minimal;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 my $_JSON = JSON->new()
     ->utf8(1)
@@ -44,7 +44,10 @@ sub add_service {
     my $self = shift;
     my ($key, $cmd) = @_;
     my ($tmpfh,$tmpfile) = tempfile(UNLINK=>0, EXLOCK=>0);
-    print $tmpfh $_JSON->encode({status=>"INIT"});
+    print $tmpfh $_JSON->encode({
+        status=>"INIT",
+        persec => '0E0',
+    });
     close $tmpfh;
     $self->{services}->{$key} = {
         cmd => ['/bin/bash', '-c', $cmd],
