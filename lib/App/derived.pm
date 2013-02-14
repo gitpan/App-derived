@@ -6,13 +6,13 @@ use 5.008005;
 use File::Temp qw/tempfile/;
 use File::Copy;
 use IO::Socket::INET;
-use POSIX qw(EINTR EAGAIN EWOULDBLOCK);
+use POSIX qw(EINTR EAGAIN EWOULDBLOCK :sys_wait_h);
 use Socket qw(IPPROTO_TCP TCP_NODELAY);
 use Proclet;
 use JSON ();
 use Log::Minimal;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 my $_JSON = JSON->new()
     ->utf8(1)
@@ -29,7 +29,7 @@ sub new {
     my $class = shift;
     my %opt = ref $_[0] ? %{$_[0]} : @_;
     my %args = (
-        proclet  => Proclet->new,
+        proclet  => Proclet->new(enable_log_worker=>0),
         interval => 10,
         host     => 0,
         port     => 12306,
@@ -47,6 +47,7 @@ sub add_service {
     print $tmpfh $_JSON->encode({
         status=>"INIT",
         persec => '0E0',
+        latest => '0E0',
     });
     close $tmpfh;
     $self->{services}->{$key} = {
@@ -76,14 +77,12 @@ sub run {
         (($^O eq 'MSWin32') ? () : (ReuseAddr => 1)),
     ) or die "failed to listen to port $localaddr: $!";
 
-
     $self->{proclet}->service(
         code => sub {
             $0 = "$0 server";
             $self->server($sock);
         },
         tag => 'server',
-        worker => 3,
     );
     debugf("run proclet");
     $self->{proclet}->run;
@@ -98,9 +97,10 @@ sub DESTROY {
 
 sub worker {
     my ($self, $service_key) = @_;
+    srand();
     my $service = $self->{services}->{$service_key};
     my $n = time;
-    $n = $n - ( $n % $self->{interval}) + $self->{interval}; #next
+    $n = $n - ( $n % $self->{interval}) + $self->{interval} + int(rand($self->{interval}));; #next + random
     my $stop = 1;
     local $SIG{TERM} = sub { $stop = 0 };
 
@@ -118,6 +118,7 @@ sub worker {
             atomic_write($service->{file}, {
                 status => "ERROR",
                 persec => undef,
+                latest => undef,
                 raw => undef,
                 exit_code => $exit_code,
                 last_update => time,
@@ -133,12 +134,21 @@ sub worker {
         }
         if ( ! defined $service->{prev} ) {
             $service->{prev} = $result;
+            atomic_write( $service->{file}, {
+                status => "CALCURATE",
+                persec => "E0E",
+                latest => $result,
+                raw => $orig,
+                exit_code => $exit_code,
+                last_update => time,
+            });
             next;
         }
         my $derive = ($result - $service->{prev}) / $self->{interval};
         atomic_write( $service->{file}, {
             status => "OK",
             persec => $derive,
+            latest => $result,
             raw => $orig,
             exit_code => $exit_code,
             last_update => time,
@@ -193,6 +203,10 @@ sub server {
     my $self = shift;
     my $sock = shift;
 
+    local $SIG{CHLD} = sub {
+        1 until (-1 == waitpid(-1, WNOHANG));
+    };
+
     while(1) {
         local $SIG{PIPE} = 'IGNORE';
         if ( my $conn = $sock->accept ) {
@@ -200,9 +214,15 @@ sub server {
             $conn->blocking(0)
                 or die "failed to set socket to nonblocking mode:$!";
             $conn->setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
-                or die "setsockopt(TCP_NODELAY) failed:$!";            
-            $self->handle_connection($conn);
-            debugf("[server] close connection: %s:%s", $conn->peerhost, $conn->peerport);
+                or die "setsockopt(TCP_NODELAY) failed:$!";
+            my $pid = fork();
+            die "cannot fork: $!" unless defined $pid;
+            if ( $pid == 0 ) {
+                $self->handle_connection($conn);
+                debugf("[server] close connection: %s:%s", $conn->peerhost, $conn->peerport);
+                $conn->close;
+                exit;
+            }
             $conn->close;
         }
     }
@@ -226,21 +246,32 @@ sub handle_connection {
                 my $result;
                 debugf("[server] request get => %s from %s:%s", $req->{keys}, $conn->peerhost, $conn->peerport);
                 for my $key ( @keys ) {
-                    my $full;
+                    my $mode = '';
                     if ( $key =~ m!:full$! ) {
-                        $full = 1;
+                        $mode = 'full';
                         $key =~ s!:full$!!;
+                    }
+                    elsif ( $key =~ m!:latest$! ) {
+                        $mode = 'latest';
+                        $key =~ s!:latest$!!;                        
                     }
                     if ( exists $self->{services}->{$key} ) {
                         my $service = $self->{services}->{$key};
                         open my $fh, '<', $service->{file} or next;
                         my $val = do { local $/; <$fh> };
-                        if ( $full ) {
+                        my $ref = $_JSON->decode($val);
+                        if ( $mode eq 'full' ) {
                             $result .= join $DELIMITER, "VALUE", $key, 0, length($val);
                             $result .= $CRLF . $val . $CRLF;
                         }
+                        elsif ( $mode eq 'latest' ) {
+                            if ( defined $ref->{latest} ) {
+                                my $val = $ref->{latest};
+                                $result .= join $DELIMITER, "VALUE", $key, 0, length($val);
+                                $result .= $CRLF . $val . $CRLF;
+                            }
+                        }
                         else {
-                            my $ref = $_JSON->decode($val);
                             if ( defined $ref->{persec} ) {
                                 my $val = $ref->{persec};
                                 $result .= join $DELIMITER, "VALUE", $key, 0, length($val);

@@ -40,7 +40,7 @@
             "Log::Minimal" : "0.14",
             "POSIX" : "0",
             "Pod::Usage" : "0",
-            "Proclet" : "0.21",
+            "Proclet" : "0.23",
             "perl" : "5.008005"
          }
       }
@@ -48,7 +48,7 @@
    "provides" : {
       "App::derived" : {
          "file" : "lib/App/derived.pm",
-         "version" : "0.03"
+         "version" : "0.04"
       }
    },
    "release_status" : "stable",
@@ -57,5 +57,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.03"
+   "version" : "0.04"
 }

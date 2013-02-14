@@ -20,7 +20,7 @@ no_index:
 provides:
   App::derived:
     file: lib/App/derived.pm
-    version: 0.03
+    version: 0.04
 requires:
   File::Copy: 0
   File::Temp: 0
@@ -30,8 +30,8 @@ requires:
   Log::Minimal: 0.14
   POSIX: 0
   Pod::Usage: 0
-  Proclet: 0.21
+  Proclet: 0.23
   perl: 5.008005
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.03
+version: 0.04
