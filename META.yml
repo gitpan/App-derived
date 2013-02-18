@@ -20,7 +20,7 @@ no_index:
 provides:
   App::derived:
     file: lib/App/derived.pm
-    version: 0.05
+    version: 0.06
   App::derived::Plugin:
     file: lib/App/derived/Plugin.pm
     version: 0
@@ -47,4 +47,4 @@ requires:
   perl: 5.008005
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.05
+version: 0.06
