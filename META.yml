@@ -20,7 +20,7 @@ no_index:
 provides:
   App::derived:
     file: lib/App/derived.pm
-    version: 0.06
+    version: 0.07
   App::derived::Plugin:
     file: lib/App/derived/Plugin.pm
     version: 0
@@ -34,11 +34,13 @@ provides:
     file: lib/App/derived/Plugin/Memcached.pm
     version: 0
 requires:
+  Class::Accessor::Lite: 0.05
   File::Copy: 0
   File::Temp: 0
   Getopt::Long: 0
   IO::Socket::INET: 0
   JSON: 2.53
+  LWP::UserAgent: 6.02
   Log::Minimal: 0.14
   Module::Load: 0.24
   POSIX: 0
@@ -47,4 +49,4 @@ requires:
   perl: 5.008005
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.06
+version: 0.07
