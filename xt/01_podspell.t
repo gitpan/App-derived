@@ -60,3 +60,9 @@ mysqldiff
 mmm
 JSON
 memcached
+CmdsFile
+pm
+GrowthForecast
+persec
+plugins
+init

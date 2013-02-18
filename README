@@ -5,7 +5,7 @@ NAME
 SYNOPSIS
       $ cat CmdsFile
       slowqueries: mysql -NB -e 'show global status like "Slow_queries%"'
-      $ derived -p port CmdsFile
+      $ derived -MMemcahced,port=11211,host=127.0.0.1 CmdsFile
 
       $ telnet localhost port
       get slowqueris
@@ -15,7 +15,7 @@ SYNOPSIS
 DESCRIPTION
     derived runs commands periodically and capture integer value. And
     calculate per-second rate. You can retrieve these values from integrated
-    memcached-protocol server
+    memcached-protocol server or pluggable workers.
 
     You can monitoring the variation of metrics through this daemon.
 

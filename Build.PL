@@ -7,6 +7,7 @@ requires_external_bin('/bin/bash');
 
 my $build = Module::Build->new(
     license              => 'perl',
+    recursive_test_files => 1,
     dynamic_config       => 0,
 
     build_requires       => {
@@ -25,6 +26,7 @@ my $build = Module::Build->new(
         'Proclet'                           => '0.23',
         'JSON'                              => '2.53',
         'Log::Minimal'                      => '0.14',
+        'Module::Load'                      => '0.24',
     },
 
     no_index    => { 'directory' => [ 'inc' ] },
@@ -34,8 +36,7 @@ my $build = Module::Build->new(
     script_files => ['bin/derived'],
 
     test_files => (-d '.git' || $ENV{RELEASE_TESTING}) ? 't/ xt/' : 't/',
-    recursive_test_files => 1,
-   
+
     create_readme  => 1,
     create_license => 1,
 );

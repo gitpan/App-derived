@@ -38,6 +38,7 @@
             "IO::Socket::INET" : "0",
             "JSON" : "2.53",
             "Log::Minimal" : "0.14",
+            "Module::Load" : "0.24",
             "POSIX" : "0",
             "Pod::Usage" : "0",
             "Proclet" : "0.23",
@@ -48,7 +49,23 @@
    "provides" : {
       "App::derived" : {
          "file" : "lib/App/derived.pm",
-         "version" : "0.04"
+         "version" : "0.05"
+      },
+      "App::derived::Plugin" : {
+         "file" : "lib/App/derived/Plugin.pm",
+         "version" : 0
+      },
+      "App::derived::Plugin::Dumper" : {
+         "file" : "lib/App/derived/Plugin/Dumper.pm",
+         "version" : 0
+      },
+      "App::derived::Plugin::GrowthForecast" : {
+         "file" : "lib/App/derived/Plugin/GrowthForecast.pm",
+         "version" : 0
+      },
+      "App::derived::Plugin::Memcached" : {
+         "file" : "lib/App/derived/Plugin/Memcached.pm",
+         "version" : 0
       }
    },
    "release_status" : "stable",
@@ -57,5 +74,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.04"
+   "version" : "0.05"
 }
