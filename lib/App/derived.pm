@@ -9,7 +9,7 @@ use Proclet;
 use JSON ();
 use Log::Minimal;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 my $_JSON = JSON->new()
     ->utf8(1)
@@ -44,7 +44,7 @@ sub add_service {
     });
     close $tmpfh;
     $self->{services}->{$key} = {
-        cmd => ['/bin/bash', '-c', $cmd],
+        cmd => ['bash', '-c', $cmd],
         file => $tmpfile,
         prev => undef,
     };
