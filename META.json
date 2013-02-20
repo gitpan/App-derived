@@ -51,7 +51,7 @@
    "provides" : {
       "App::derived" : {
          "file" : "lib/App/derived.pm",
-         "version" : "0.09"
+         "version" : "0.10"
       },
       "App::derived::Plugin" : {
          "file" : "lib/App/derived/Plugin.pm",
@@ -76,5 +76,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.09"
+   "version" : "0.10"
 }

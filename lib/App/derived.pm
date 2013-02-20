@@ -9,7 +9,7 @@ use Proclet;
 use JSON ();
 use Log::Minimal;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 my $_JSON = JSON->new()
     ->utf8(1)
@@ -95,8 +95,12 @@ sub worker {
     local $SIG{TERM} = sub { $stop = 0 };
 
     while ( $stop ) {
+        my $current = time();
+        while ( $n < $current ) {
+            $n = $n + $self->{interval};
+        }
         while ( $stop ) {
-            last if time >= $n;
+            last if time() >= $n;
             select undef, undef, undef, 0.1 ## no critic;
         }
         $n = $n + $self->{interval};
